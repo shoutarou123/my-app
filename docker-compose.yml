@@ -1,0 +1,29 @@
+services:
+  my-app-db:
+    image: postgres:16.9
+    container_name: postgres-db
+    volumes:
+      - postgres:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=myapp_development
+    ports:
+      - "5432:5432"
+
+  my-app-backend:
+    build:
+      context: ./backend
+    container_name: fastapi-backend
+    volumes:
+      - ./backend/:/app
+    ports:
+      - "8000:8000"
+    depends_on:
+      - my-app-db
+    environment:
+      - DATABASE_URL=postgresql://postgres:password@my-app-db:5432/myapp_development
+    command: uvicorn main:app --host 0.0.0.0 --port 8000
+
+volumes:
+  postgres:
